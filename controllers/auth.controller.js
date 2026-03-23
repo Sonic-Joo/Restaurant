@@ -1,4 +1,5 @@
 const asyncHandler = require("express-async-handler");
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const {
@@ -6,7 +7,11 @@ const {
   validationOnRegister,
   validationOnLogin,
 } = require("../models/user");
-const { generateToken } = require("../middlewares/generateToken");
+const RefreshToken = require("../models/refreshToken");
+const {
+  generateTokens,
+  generateAccessToken,
+} = require("../utils/generateToken");
 const verifyEmail = require("../utils/verifyEmail");
 
 /**---------------------------------------------------------------
@@ -71,7 +76,7 @@ module.exports.loginCtrl = asyncHandler(async (req, res) => {
   }
 
   if (!userExist.isVerified) {
-    return res.status(403).json({ message: "Please Verify Your Email First" });
+    return res.status(403).json({ message: "Please Verify Your Email" });
   }
 
   const isValidPass = await bcrypt.compare(
@@ -82,17 +87,15 @@ module.exports.loginCtrl = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Email or Password is Incorrect" });
   }
 
-  const token = generateToken({
-    id: userExist._id,
-    role: userExist.role,
-  });
+  const { accessToken, refreshToken } = await generateTokens(userExist);
 
   res.status(200).json({
     id: userExist._id,
     username: userExist.username,
     email: userExist.email,
     role: userExist.role,
-    token,
+    accessToken,
+    refreshToken,
   });
 });
 
@@ -168,7 +171,7 @@ module.exports.resetPasswordCtrl = asyncHandler(async (req, res) => {
   }
 
   const { newPassword } = req.body;
-  if (!newPassword || newPassword.length < 8) {
+  if (newPassword.trim().length < 8) {
     return res
       .status(400)
       .json({ message: "New Password must be at least 8 characters" });
@@ -182,4 +185,73 @@ module.exports.resetPasswordCtrl = asyncHandler(async (req, res) => {
   await user.save();
 
   res.status(200).json({ message: "Password Reset Successfully" });
+});
+
+/**---------------------------------------------------------------
+ * @desc Refresh Access Token
+ * @router /api/auth/refresh
+ * @method POST
+ * @access public
+  ---------------------------------------------------------------*/
+module.exports.refreshAccessToken = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Refresh Token is Required" });
+  }
+
+  const storedToken = await RefreshToken.findOne({ token: refreshToken });
+  if (!storedToken) {
+    return res.status(401).json({ message: "Refresh Token is Not Valid" });
+  }
+
+  if (storedToken.expiresAt < new Date()) {
+    await RefreshToken.deleteOne({ token: refreshToken });
+    return res
+      .status(401)
+      .json({ message: "Refresh Token is Expired, Please Login Again" });
+  }
+
+  const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET_KEY);
+  const user = await User.findOne({ _id: decoded.id });
+
+  const accessToken = generateAccessToken(user);
+
+  res.status(200).json({ accessToken });
+});
+
+/**---------------------------------------------------------------
+ * @desc Logout
+ * @router /api/auth/logout
+ * @method POST
+ * @access public
+---------------------------------------------------------------*/
+module.exports.logoutCtrl = asyncHandler(async (req, res) => {
+  const { refreshToken } = req.body;
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Refresh Token is Required" });
+  }
+
+  const storedToken = await RefreshToken.findOneAndDelete({
+    token: refreshToken,
+  });
+  if (!storedToken) {
+    return res.status(401).json({ message: "Refresh Token is Not Valid" });
+  }
+
+  res.status(200).json({ message: "Logout Successfully" });
+});
+
+/**---------------------------------------------------------------
+ * @desc Login with google or facebook (Oauth2)
+ * @router /api/auth/google || /api/auth/facebook
+ * @method GET
+ * @access public
+---------------------------------------------------------------*/
+module.exports.authCallback = asyncHandler((req, res) => {
+  const { user, tokens } = req.user;
+  res.status(200).json({
+    user,
+    accessToken: tokens.accessToken,
+    refreshToken: tokens.refreshToken,
+  });
 });

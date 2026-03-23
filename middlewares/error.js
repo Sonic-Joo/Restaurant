@@ -1,6 +1,17 @@
-const errorHandler = (err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
+const logger = require("../utils/logger");
+
+module.exports.notFound = (req, res, next) => {
+  const err = new Error(`Route ${req.url} not found`);
+  err.status = err.statusCode = 404;
+  next(err);
+};
+
+module.exports.errorHandler = (err, req, res, next) => {
+  const statusCode = err.statusCode || err.status || 500;
+
+  logger.error(`${statusCode} - ${err.message} - ${req.method} ${req.url}`, {
+    stack: err.stack,
+  });
 
   // Mongoose Validation Error
   if (err.name === "ValidationError") {
@@ -35,7 +46,7 @@ const errorHandler = (err, req, res, next) => {
     return res.status(401).json({ message: "Token Expired" });
   }
 
-  res.status(statusCode).json({ message });
+  res
+    .status(statusCode)
+    .json({ message: err.message || "Internal Server Error" });
 };
-
-module.exports = errorHandler;

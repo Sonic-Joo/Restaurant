@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const auditLogger = require("../middlewares/auditLogger");
 const {
   createOrder,
   getAllOrders,
@@ -14,12 +15,20 @@ const {
 
 router
   .route("/")
-  .post(verifyToken, createOrder)
+  .post(verifyToken, auditLogger("Create Order", "Order"), createOrder)
   .get(verifyTokenAndStaff, getAllOrders);
 
 router.route("/myorder").get(verifyToken, getUserOrders);
-router.route("/:id").put(verifyTokenAndChef, updateOrderState);
+router
+  .route("/:id")
+  .put(
+    verifyTokenAndChef,
+    auditLogger("Update Order", "Order"),
+    updateOrderState,
+  );
 
-router.route("/:id/cancel").put(verifyToken, cancelOrder);
+router
+  .route("/:id/cancel")
+  .put(verifyToken, auditLogger("Delete Order", "Order"), cancelOrder);
 
 module.exports = router;

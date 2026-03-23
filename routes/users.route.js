@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const auditLogger = require("../middlewares/auditLogger");
 const {
   getAllUsersCtrl,
   getUserByIdCtrl,
@@ -16,8 +17,23 @@ const {
 router.get("/", verifyTokenAndAdmin, getAllUsersCtrl);
 router.put("/change-password", verifyToken, changePasswordCtrl);
 router.get("/:id", verifyToken, getUserByIdCtrl);
-router.put("/:id", verifyTokenAndUser, updateUserCtrl);
-router.put("/:id/role", verifyTokenAndAdmin, changeUserRole);
-router.delete("/:id", verifyTokenAndUser, deleteUserCtrl);
+router.put(
+  "/:id",
+  verifyTokenAndUser,
+  auditLogger("Update User", "User"),
+  updateUserCtrl,
+);
+router.put(
+  "/:id/role",
+  verifyTokenAndAdmin,
+  auditLogger("Update User Role", "User"),
+  changeUserRole,
+);
+router.delete(
+  "/:id",
+  verifyTokenAndUser,
+  auditLogger("Delete User", "User"),
+  deleteUserCtrl,
+);
 
 module.exports = router;

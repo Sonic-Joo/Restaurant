@@ -17,13 +17,11 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
       minlength: 8,
       select: false,
     },
     phoneNumber: {
       type: String,
-      required: true,
       trim: true,
     },
     role: {
@@ -38,6 +36,16 @@ const userSchema = new mongoose.Schema(
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    googleId: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    facebookId: {
+      type: String,
+      default: null,
+      select: false,
     },
     verificationToken: {
       type: String,
@@ -54,10 +62,23 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: (doc, ret) => {
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      },
+    },
     toObject: { virtuals: true },
   },
 );
+
+userSchema.virtual("orders", {
+  ref: "Order",
+  foreignField: "user",
+  localField: "_id",
+});
 
 const validationOnRegister = (obj) => {
   const schema = joi.object({
@@ -101,12 +122,6 @@ const validateChangePassword = (obj) => {
   });
   return schema.validate(obj);
 };
-
-userSchema.virtual("orders", {
-  ref: "Order",
-  foreignField: "user",
-  localField: "_id",
-});
 
 const User = mongoose.model("User", userSchema);
 

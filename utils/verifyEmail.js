@@ -15,14 +15,13 @@ module.exports = async (userEmail, subject, htmlTemplate) => {
       to: userEmail,
       subject: subject,
       html: htmlTemplate,
-      // text
     };
 
     const info = await transporter.sendMail(mailOption);
     console.log("Email Sent:", info.response);
     return info;
   } catch (error) {
-    console.error("Email Service Error Details:", error);
+    console.error("Email Service Error Details:", error.message);
     throw new Error(error.message || "Email Service Error");
   }
 };

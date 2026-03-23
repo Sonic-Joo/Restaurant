@@ -57,7 +57,7 @@ const verifyTokenAndChef = (req, res, next) => {
 const verifyTokenAndDelivery = (req, res, next) => {
   verifyToken(req, res, () => {
     if (req.user.role === "delivery" || req.user.role === "admin")
-      return next();
+      next();
     else {
       return res
         .status(403)
