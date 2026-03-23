@@ -1,136 +1,124 @@
 # Restaurant API
 
-A production-ready REST API for a restaurant ordering system built with Node.js, Express.js, and MongoDB.
+REST API for a restaurant ordering system, built with Node.js, Express, and MongoDB.
 
----
+## Features
+
+- JWT auth with access/refresh token flow
+- Email verification and password reset
+- Google and Facebook OAuth login
+- Role-based access control (`user`, `chef`, `delivery`, `admin`)
+- Menu CRUD with multi-image Cloudinary upload
+- Order lifecycle management by staff roles
+- Security middleware (`helmet`, rate limiting, input sanitization)
+- Request and audit logging
 
 ## Tech Stack
 
-| Technology                | Usage                     |
-| ------------------------- | ------------------------- |
-| **Node.js + Express.js**  | Backend Framework         |
-| **MongoDB + Mongoose**    | Database                  |
-| **JWT + bcrypt**          | Authentication & Security |
-| **Cloudinary + Multer**   | Image Upload              |
-| **NodeMailer**            | Email Service             |
-| **Helmet + Rate Limiter** | Security Middleware       |
-
----
+- Node.js, Express
+- MongoDB, Mongoose
+- JWT, bcrypt
+- Multer, Cloudinary
+- Nodemailer
+- Passport (Google/Facebook OAuth)
+- Helmet, express-rate-limit
 
 ## Project Structure
 
-```
-restaurant-api/
+```text
+2 - Restaurant/
 ├── controllers/
-│   ├── auth.controller.js
-│   ├── users.controller.js
-│   ├── menu.controller.js
-│   └── order.controller.js
-├── models/
-│   ├── user.js
-│   ├── menu.js
-│   └── order.js
-├── routes/
-│   ├── auth.route.js
-│   ├── users.route.js
-│   ├── menu.route.js
-│   └── order.route.js
-├── middlewares/
-│   ├── verifyToken.js
-│   ├── photoUpload.js
-│   ├── ratelimiter.js
-│   ├── generateToken.js
-│   └── error.js
-├── utils/
-│   ├── cloudinary.js
-│   └── verifyEmail.js
 ├── DB/
-│   └── connectedDB.js
+├── logs/
+├── middlewares/
+├── models/
+├── routes/
+├── utils/
 ├── web/
-│   └── index.html
-├── .env
-├── .gitignore
-├── package.json
-└── main.js
+├── main.js
+└── package.json
 ```
 
----
+## Getting Started
 
-## Environment Variables
+### 1) Install dependencies
 
-Create a `.env` file in the root directory:
+```bash
+npm install
+```
+
+### 2) Create `.env`
 
 ```env
 PORT=8000
-MONGODB_URI=your_mongodb_connection_string
+MONGODB_URI=your_mongodb_uri
 
 JWT_SECRET_KEY=your_jwt_secret
 JWT_EXPIRES_IN=7d
 
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+SESSION_SECRET=your_session_secret
 
-EMAIL_USER=your_gmail@gmail.com
-EMAIL_PASS=your_app_password
-
+EMAIL_USER=your_email
+EMAIL_PASS=your_email_app_password
 CLIENT_URL=http://localhost:8000
+
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
+
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+FACEBOOK_APP_ID=your_facebook_app_id
+FACEBOOK_APP_SECRET=your_facebook_app_secret
 ```
 
----
-
-## Installation & Setup
+### 3) Run the server
 
 ```bash
-# Clone the repository
-git clone https://github.com/Sonic-Joo/restaurant-api.git
-
-# Navigate to project directory
-cd restaurant-api
-
-# Install dependencies
-npm install
-
-# Run in development mode
+# Development
 npm run dev
 
-# Run in production mode
-npm start
+# Production-style run (no dedicated npm script yet)
+node main.js
 ```
 
----
+Server default URL: `http://localhost:8000`
 
-## User Roles
+## Authentication Header
 
-| Role         | Permissions                                               |
-| ------------ | --------------------------------------------------------- |
-| **user**     | Browse menu, place orders, view own orders, cancel orders |
-| **chef**     | Manage menu items, update order status                    |
-| **delivery** | View ready orders                                         |
-| **admin**    | Full access to everything                                 |
+Protected routes expect:
 
----
+```http
+Authorization: Bearer <access_token>
+```
 
-## API Endpoints
+## API Routes
 
 ### Auth `/api/auth`
 
 | Method | Endpoint                 | Description               | Access |
 | ------ | ------------------------ | ------------------------- | ------ |
 | POST   | `/register`              | Register new user         | Public |
-| POST   | `/login`                 | Login & get token         | Public |
+| POST   | `/login`                 | Login user                | Public |
+| POST   | `/refresh`               | Refresh access token      | Public |
 | GET    | `/verify/:token`         | Verify email              | Public |
-| POST   | `/forgot-password`       | Send reset password email | Public |
+| POST   | `/forgot-password`       | Request reset email       | Public |
 | POST   | `/reset-password/:token` | Reset password            | Public |
+| GET    | `/logout`                | Logout user               | Public |
+| GET    | `/google`                | Start Google OAuth        | Public |
+| GET    | `/google/callback`       | Google OAuth callback     | Public |
+| GET    | `/facebook`              | Start Facebook OAuth      | Public |
+| GET    | `/facebook/callback`     | Facebook OAuth callback   | Public |
 
 ### Users `/api/user`
 
 | Method | Endpoint           | Description      | Access          |
 | ------ | ------------------ | ---------------- | --------------- |
 | GET    | `/`                | Get all users    | Admin           |
-| GET    | `/:id`             | Get user by ID   | Private         |
-| PUT    | `/change-password` | Change password  | Private         |
-| PUT    | `/:id`             | Update user      | Same user       |
+| GET    | `/:id`             | Get user by ID   | Authenticated   |
+| PUT    | `/change-password` | Change password  | Authenticated   |
+| PUT    | `/:id`             | Update user      | Same user/Admin |
 | PUT    | `/:id/role`        | Change user role | Admin           |
 | DELETE | `/:id`             | Delete user      | Same user/Admin |
 
@@ -138,85 +126,36 @@ npm start
 
 | Method | Endpoint     | Description                    | Access     |
 | ------ | ------------ | ------------------------------ | ---------- |
-| GET    | `/`          | Get all menu items (paginated) | Public     |
-| GET    | `/search`    | Search & filter menu           | Public     |
-| GET    | `/:id`       | Get item by ID                 | Public     |
-| POST   | `/`          | Create menu item + images      | Chef/Admin |
+| GET    | `/`          | Get menu items                 | Public     |
+| GET    | `/search`    | Search/filter menu             | Public     |
+| GET    | `/:id`       | Get menu item by ID            | Public     |
+| POST   | `/`          | Create menu item (+images)     | Chef/Admin |
 | PUT    | `/:id`       | Update menu item               | Chef/Admin |
-| PUT    | `/:id/image` | Update item images             | Chef/Admin |
+| PUT    | `/:id/image` | Update menu item images        | Chef/Admin |
 | DELETE | `/:id`       | Delete menu item               | Chef/Admin |
 
 ### Orders `/api/order`
 
-| Method | Endpoint      | Description                   | Access              |
-| ------ | ------------- | ----------------------------- | ------------------- |
-| POST   | `/`           | Place new order               | User                |
-| GET    | `/`           | Get all orders (with filters) | Admin/Chef/Delivery |
-| GET    | `/myorder`    | Get my orders                 | User                |
-| PUT    | `/:id`        | Update order status           | Chef/Admin          |
-| PUT    | `/:id/cancel` | Cancel order                  | User                |
+| Method | Endpoint      | Description                    | Access              |
+| ------ | ------------- | ------------------------------ | ------------------- |
+| POST   | `/`           | Create order                   | Authenticated user  |
+| GET    | `/`           | Get all orders                 | Staff (admin/chef/delivery) |
+| GET    | `/myorder`    | Get current user orders        | Authenticated user  |
+| PUT    | `/:id`        | Update order state             | Chef/Admin          |
+| PUT    | `/:id/cancel` | Cancel order                   | Authenticated user  |
 
----
+## Search Examples
 
-## Search & Filter
-
-### Menu Search Example
-
-```
+```http
 GET /api/menu/search?search=pizza
 GET /api/menu/search?category=grills
 GET /api/menu/search?search=pizza&category=grills
 GET /api/menu/search?page=1&limit=5
-```
 
-### Available Categories
-
-- `grills`
-- `drinks`
-- `desserts`
-- `sandwiches`
-
-### Orders Filter
-
-```
 GET /api/order?status=pending
 GET /api/order?status=ready
 ```
 
----
-
-## Security Features
-
-- **JWT Authentication** - Secure token-based auth
-- **Password Hashing** - bcrypt with salt rounds
-- **Email Verification** - Verify before login
-- **Rate Limiting** - Prevent brute force attacks
-- **Helmet** - HTTP security headers
-- **Role-based Access Control** - 4 user roles
-
----
-
-## 📧 Email Features
-
-- Email verification on register
-- Password reset via email
-- 10-minute expiry on reset tokens
-
----
-
-## Image Upload
-
-- Multiple images per menu item (max 5)
-- Stored on Cloudinary
-- Auto-delete from Cloudinary on item deletion
-- 5MB max file size per image
-
----
-
 ## License
 
-MIT License - feel free to use this project for learning purposes.
-
----
-
-Made with => Yousef Shohber
+ISC (as defined in `package.json`).
