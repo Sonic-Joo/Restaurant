@@ -1,7 +1,7 @@
 const { client } = require("../utils/redisClient");
 const logger = require("../utils/logger");
 
-const cache = (key, ttl = 60 * 60) => {
+const cache = (key, ttl = 3600) => {
   return async (req, res, next) => {
     try {
       const cached = await client.get(key);
@@ -28,4 +28,17 @@ const cache = (key, ttl = 60 * 60) => {
   };
 };
 
-module.exports = cache;
+const cacheWithPagenation = (key, ttl = 3600) => {
+  return async (req, res, next) => {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+
+    if (page === 1 && limit === 10) {
+      return cache(key, ttl)(req, res, next);
+    }
+
+    return next();
+  };
+};
+
+module.exports = { cache, cacheWithPagenation };

@@ -1,7 +1,7 @@
-const redis = require("redis");
+const { createClient } = require("redis");
 const logger = require("./logger");
 
-const client = redis.createClient({
+const client = createClient({
   username: "default",
   password: process.env.REDIS_PASSWORD,
   socket: {
@@ -10,9 +10,9 @@ const client = redis.createClient({
     reconnectStrategy: (retries) => {
       if (retries > 3) {
         logger.error("Redis max retries reached, stopping...");
-        return false; // وقف المحاولات
+        return false;
       }
-      return retries * 500; // انتظر 500ms بين كل محاولة
+      return retries * 1000;
     },
   },
 });
@@ -30,7 +30,6 @@ const connectRedis = async () => {
     await client.connect();
   } catch (err) {
     logger.error("Redis connection failed:", err);
-    return err;
   }
 };
 

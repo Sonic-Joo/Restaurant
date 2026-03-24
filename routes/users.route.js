@@ -13,20 +13,14 @@ const {
   verifyTokenAndAdmin,
   verifyTokenAndUser,
 } = require("../middlewares/verifyToken");
-const cache = require("../middlewares/cache");
+const { cacheWithPagenation } = require("../middlewares/cache");
 
-const cacheUserItemsIfDefault = (req, res, next) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-
-  if (page === 1 && limit === 10) {
-    return cache("user-items", 60 * 60 * 12)(req, res, next);
-  }
-
-  return next();
-};
-
-router.get("/", verifyTokenAndAdmin, cacheUserItemsIfDefault, getAllUsersCtrl);
+router.get(
+  "/",
+  verifyTokenAndAdmin,
+  cacheWithPagenation("user-items", 60 * 60 * 12),
+  getAllUsersCtrl,
+);
 
 router.put("/change-password", verifyToken, changePasswordCtrl);
 

@@ -11,22 +11,11 @@ const {
   updateMenuItemImage,
   searchMenuItem,
 } = require("../controllers/menu.controller");
-const cache = require("../middlewares/cache");
-
-const cacheMenuItemsIfDefault = (req, res, next) => {
-  const page = parseInt(req.query.page) || 1;
-  const limit = parseInt(req.query.limit) || 10;
-
-  if (page === 1 && limit === 10) {
-    return cache("menu-items", 60 * 60 * 12)(req, res, next);
-  }
-
-  return next();
-};
+const { cacheWithPagenation } = require("../middlewares/cache");
 
 router
   .route("/")
-  .get(cacheMenuItemsIfDefault, getAllMenuItems)
+  .get(cacheWithPagenation("menu-items", 60 * 60 * 12), getAllMenuItems)
   .post(
     verifyTokenAndChef,
     auditLogger("Create MenuItem", "MenuItem"),
