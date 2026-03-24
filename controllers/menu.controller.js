@@ -8,6 +8,7 @@ const {
   cloudinaryUploadImage,
   cloudinaryDeleteMultiImage,
 } = require("../utils/cloudinary");
+const { client } = require("../utils/redisClient");
 
 /**---------------------------------------------------------------
  * @desc Create New Item 
@@ -38,6 +39,8 @@ module.exports.createMenuItem = asyncHandler(async (req, res) => {
   }
 
   const item = await MenuItem.create({ ...req.body, images });
+  await client.del("menu-items");
+
   res.status(201).json(item);
 });
 
@@ -103,6 +106,7 @@ module.exports.updateMenuItem = asyncHandler(async (req, res) => {
     },
     { new: true },
   );
+  await client.del("menu-items");
 
   res.status(200).json(updated);
 });
@@ -137,6 +141,7 @@ module.exports.updateMenuItemImage = asyncHandler(async (req, res) => {
 
   itemExist.images = images;
   await itemExist.save();
+  await client.del("menu-items");
 
   res.status(200).json({ item: itemExist });
 });
@@ -178,7 +183,7 @@ module.exports.searchMenuItem = asyncHandler(async (req, res) => {
 });
 
 /**---------------------------------------------------------------
- * @desc Delete Menu Item 
+ * @desc Delete Menu Item
  * @router /api/menu/:id
  * @method DELETE
  * @access private (only admin and chef)
@@ -193,6 +198,7 @@ module.exports.deleteMenuItem = asyncHandler(async (req, res) => {
   if (publicIds.length > 0) await cloudinaryDeleteMultiImage(publicIds);
 
   const deleted = await MenuItem.findByIdAndDelete(req.params.id);
+  await client.del("menu-items");
 
   res.status(200).json(deleted);
 });

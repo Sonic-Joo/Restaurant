@@ -11,16 +11,28 @@ const {
   updateMenuItemImage,
   searchMenuItem,
 } = require("../controllers/menu.controller");
+const cache = require("../middlewares/cache");
+
+const cacheMenuItemsIfDefault = (req, res, next) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+
+  if (page === 1 && limit === 10) {
+    return cache("menu-items", 60 * 60 * 12)(req, res, next);
+  }
+
+  return next();
+};
 
 router
   .route("/")
+  .get(cacheMenuItemsIfDefault, getAllMenuItems)
   .post(
     verifyTokenAndChef,
     auditLogger("Create MenuItem", "MenuItem"),
     uploadPhoto.array("images", 5),
     createMenuItem,
-  )
-  .get(getAllMenuItems);
+  );
 
 router.route("/search").get(searchMenuItem);
 

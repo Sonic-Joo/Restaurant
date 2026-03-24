@@ -13,6 +13,7 @@ const {
   generateAccessToken,
 } = require("../utils/generateToken");
 const verifyEmail = require("../utils/verifyEmail");
+const { client } = require("../utils/redisClient");
 
 /**---------------------------------------------------------------
  * @desc Register New User - Sign Up
@@ -52,6 +53,7 @@ module.exports.registerUserCtrl = asyncHandler(async (req, res) => {
     <a href="${verifyLink}">Verify Email</a>
     <p>Link expires in 24 hours</p>`;
   await verifyEmail(user.email, "Verify Your Email", htmlTemplate);
+  await client.del("user-items");
 
   res.status(201).json({ message: "User Created Successfully, Please Login" });
 });

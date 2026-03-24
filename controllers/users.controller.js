@@ -5,6 +5,7 @@ const {
   validationOnUpdate,
   validateChangePassword,
 } = require("../models/user");
+const { client } = require("../utils/redisClient");
 
 /**---------------------------------------------------------------
  * @desc Get All Users
@@ -69,6 +70,7 @@ module.exports.updateUserCtrl = asyncHandler(async (req, res) => {
     { $set: req.body },
     { new: true },
   ).select("-password");
+  await client.del("user-items");
 
   res.status(200).json({ message: "user updated successfully", updated });
 });
@@ -84,6 +86,7 @@ module.exports.deleteUserCtrl = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(404).json({ message: "User Not Found" });
   }
+  await client.del("user-items");
 
   res.status(200).json({ message: "User Deleted Successfully" });
 });
@@ -139,6 +142,7 @@ module.exports.changeUserRole = asyncHandler(async (req, res) => {
 
   user.role = role;
   await user.save();
+  await client.del("user-items");
 
   res.status(200).json(user);
 });

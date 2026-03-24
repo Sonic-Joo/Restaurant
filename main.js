@@ -10,10 +10,12 @@ const logger = require("./utils/logger");
 const { errorHandler, notFound } = require("./middlewares/error");
 const passport = require("passport");
 const session = require("express-session");
+const { connectRedis } = require("./utils/redisClient");
 require("./utils/passport");
 
 const app = express();
 connectDB();
+connectRedis()
 
 app.use(
   session({

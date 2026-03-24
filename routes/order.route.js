@@ -12,11 +12,12 @@ const {
   verifyTokenAndStaff,
   verifyTokenAndChef,
 } = require("../middlewares/verifyToken");
+const cache = require("../middlewares/cache");
 
 router
   .route("/")
   .post(verifyToken, auditLogger("Create Order", "Order"), createOrder)
-  .get(verifyTokenAndStaff, getAllOrders);
+  .get(verifyTokenAndStaff, cache("order-items"), getAllOrders);
 
 router.route("/myorder").get(verifyToken, getUserOrders);
 router

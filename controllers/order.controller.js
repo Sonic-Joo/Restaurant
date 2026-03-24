@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const { Order, validateOrder } = require("../models/order");
 const { User } = require("../models/user");
 const { MenuItem } = require("../models/menu");
+const { client } = require("../utils/redisClient");
 
 /**---------------------------------------------------------------
  * @desc Create Order
@@ -49,6 +50,7 @@ module.exports.createOrder = asyncHandler(async (req, res) => {
     totalPrice,
     address: req.body.address,
   });
+  await client.del("order-items");
 
   res.status(201).json(order);
 });
@@ -104,6 +106,8 @@ module.exports.updateOrderState = asyncHandler(async (req, res) => {
   } else {
     return res.status(400).json({ message: "Invalid Status" });
   }
+  await client.del("order-items");
+
   res.status(200).json(order);
 });
 
@@ -131,6 +135,7 @@ module.exports.cancelOrder = asyncHandler(async (req, res) => {
 
   order.status = "cancelled";
   await order.save();
+  await client.del("order-items");
 
   res.status(200).json({ message: "Order Cancelled Successfully", order });
 });
