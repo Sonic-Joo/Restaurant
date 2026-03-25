@@ -15,7 +15,7 @@ router.route("/register").post(registerUserCtrl);
 
 router.route("/login").post(loginCtrl);
 
-router.route("/refresh").post(refreshAccessToken);
+router.route("/refresh-access-token").post(refreshAccessToken);
 
 router.get("/verify/:token", verifyEmailCtrl);
 
@@ -23,7 +23,7 @@ router.post("/forgot-password", forgotPasswordCtrl);
 
 router.post("/reset-password/:token", resetPasswordCtrl);
 
-router.route("/logout").get(logoutCtrl);
+router.route("/logout").post(logoutCtrl);
 
 router
   .route("/google")

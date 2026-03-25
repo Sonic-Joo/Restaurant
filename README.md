@@ -1,32 +1,73 @@
-# Restaurant API
+# 🍽️ Restaurant API
 
-REST API for a restaurant ordering system, built with Node.js, Express, and MongoDB.
+Production-ready REST API for a restaurant ordering system built with Node.js, Express, and MongoDB.
 
-## Features
+---
 
-- JWT auth with access/refresh token flow
-- Email verification and password reset
-- Google and Facebook OAuth login
-- Role-based access control (`user`, `chef`, `delivery`, `admin`)
-- Menu CRUD with multi-image Cloudinary upload
-- Order lifecycle management by staff roles
-- Security middleware (`helmet`, rate limiting, input sanitization)
-- Request and audit logging
+## 🚀 Features
 
-## Tech Stack
+- 🔐 Authentication & Authorization
+  - JWT (Access + Refresh Tokens)
+  - Refresh Token Rotation + Invalidation
+  - Email Verification & Password Reset
+  - Google & Facebook OAuth
 
-- Node.js, Express
-- MongoDB, Mongoose
-- JWT, bcrypt
-- Multer, Cloudinary
-- Nodemailer
-- Passport (Google/Facebook OAuth)
-- Helmet, express-rate-limit
+- 👥 Role-Based Access Control (RBAC)
+  - `user`, `chef`, `delivery`, `admin`
 
-## Project Structure
+- 🍔 Menu Management
+  - Full CRUD
+  - Image uploads (Cloudinary, up to 5 images)
 
-```text
-2 - Restaurant/
+- 📦 Order System
+  - Full lifecycle:
+    - `pending` → `ready` → `delivered` / `cancelled`
+
+- ⚡ Performance
+  - Redis caching for read-heavy endpoints
+
+- 🛡️ Security
+  - Helmet (secure headers)
+  - Rate limiting (auth & global)
+  - CORS protection
+  - XSS & CSRF protection
+
+- 🧾 Logging
+  - Request logging (Winston and Morgan)
+  - Audit logging
+
+---
+
+## 🧠 Architecture
+
+- Layered structure (Controllers / Models / Routes / Utils)
+- Centralized error handling
+- Validation layer using Joi
+- Scalable and maintainable design
+
+---
+
+## 🛠️ Tech Stack
+
+| Technology          | Usage                    |
+| ------------------- | ------------------------ |
+| Node.js + Express   | Backend framework        |
+| MongoDB + Mongoose  | Database                 |
+| JWT                 | Authentication           |
+| bcrypt              | Password hashing         |
+| Redis               | Caching & token handling |
+| Multer + Cloudinary | File uploads             |
+| Nodemailer          | Emails                   |
+| Passport            | OAuth                    |
+| Helmet              | Security headers         |
+| express-rate-limit  | Rate limiting            |
+
+---
+
+## 📁 Project Structure
+
+```
+Restaurant/
 ├── controllers/
 ├── DB/
 ├── logs/
@@ -39,28 +80,106 @@ REST API for a restaurant ordering system, built with Node.js, Express, and Mong
 └── package.json
 ```
 
-## Getting Started
+---
 
-### 1) Install dependencies
-
-```bash
-npm install
-```
-
-### 2) Create `.env`
+## ⚙️ Environment Variables
 
 ```env
 PORT=8000
-MONGODB_URI=your_mongodb_uri
+NODE_ENV=development
+MONGO_URL=
+
+JWT_SECRET_KEY=
+JWT_REFRESH_SECRET_KEY=
+JWT_EXPIRES_IN=7d
+
+SESSION_SECRET=
+CLIENT_URL=
+
+EMAIL_USER=
+EMAIL_PASS=
+
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+
+REDIS_HOST=
+REDIS_PORT=
+REDIS_PASSWORD=
+```
+
+---
+
+## ▶️ Getting Started
+
+### Install
+
+```
+npm install
+```
+
+### Run (Dev)
+
+```
+npm run dev
+```
+
+### Run (Production)
+
+```
+node main.js
+```
+
+---
+
+## 🔐 Authentication
+
+All protected routes require:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+---
+
+## 🔁 Auth Flow
+
+1. User logs in → receives:
+   - Access Token (short-lived)
+   - Refresh Token (stored in DB)
+
+2. Refresh:
+   - Old refresh token is invalidated
+   - New access + refresh tokens are issued
+
+3. Security:
+   - Token reuse detection supported
+   - Server-side token storage
+
+---
+
+## Create `.env`
+
+```env
+PORT=8000
+NODE_ENV=development
+MONGO_URL=your_mongodb_uri
 
 JWT_SECRET_KEY=your_jwt_secret
+JWT_REFRESH_SECRET_KEY=your_refresh_jwt_secret
 JWT_EXPIRES_IN=7d
 
 SESSION_SECRET=your_session_secret
+CLIENT_URL=http://localhost:8000
 
 EMAIL_USER=your_email
 EMAIL_PASS=your_email_app_password
-CLIENT_URL=http://localhost:8000
 
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_key
@@ -71,45 +190,29 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 
 FACEBOOK_APP_ID=your_facebook_app_id
 FACEBOOK_APP_SECRET=your_facebook_app_secret
-```
 
-### 3) Run the server
-
-```bash
-# Development
-npm run dev
-
-# Production-style run (no dedicated npm script yet)
-node main.js
-```
-
-Server default URL: `http://localhost:8000`
-
-## Authentication Header
-
-Protected routes expect:
-
-```http
-Authorization: Bearer <access_token>
+REDIS_HOST=your_redis_host
+REDIS_PORT=14756
+REDIS_PASSWORD=your_redis_password
 ```
 
 ## API Routes
 
 ### Auth `/api/auth`
 
-| Method | Endpoint                 | Description               | Access |
-| ------ | ------------------------ | ------------------------- | ------ |
-| POST   | `/register`              | Register new user         | Public |
-| POST   | `/login`                 | Login user                | Public |
-| POST   | `/refresh`               | Refresh access token      | Public |
-| GET    | `/verify/:token`         | Verify email              | Public |
-| POST   | `/forgot-password`       | Request reset email       | Public |
-| POST   | `/reset-password/:token` | Reset password            | Public |
-| GET    | `/logout`                | Logout user               | Public |
-| GET    | `/google`                | Start Google OAuth        | Public |
-| GET    | `/google/callback`       | Google OAuth callback     | Public |
-| GET    | `/facebook`              | Start Facebook OAuth      | Public |
-| GET    | `/facebook/callback`     | Facebook OAuth callback   | Public |
+| Method | Endpoint                 | Description             | Access |
+| ------ | ------------------------ | ----------------------- | ------ |
+| POST   | `/register`              | Register new user       | Public |
+| POST   | `/login`                 | Login user              | Public |
+| POST   | `/refresh`               | Refresh access token    | Public |
+| GET    | `/verify/:token`         | Verify email            | Public |
+| POST   | `/forgot-password`       | Request reset email     | Public |
+| POST   | `/reset-password/:token` | Reset password          | Public |
+| GET    | `/google`                | Start Google OAuth      | Public |
+| GET    | `/google/callback`       | Google OAuth callback   | Public |
+| GET    | `/facebook`              | Start Facebook OAuth    | Public |
+| GET    | `/facebook/callback`     | Facebook OAuth callback | Public |
+| POST   | `/logout`                | Logout user             | Public |
 
 ### Users `/api/user`
 
@@ -124,36 +227,38 @@ Authorization: Bearer <access_token>
 
 ### Menu `/api/menu`
 
-| Method | Endpoint     | Description                    | Access     |
-| ------ | ------------ | ------------------------------ | ---------- |
-| GET    | `/`          | Get menu items                 | Public     |
-| GET    | `/search`    | Search/filter menu             | Public     |
-| GET    | `/:id`       | Get menu item by ID            | Public     |
-| POST   | `/`          | Create menu item (+images)     | Chef/Admin |
-| PUT    | `/:id`       | Update menu item               | Chef/Admin |
-| PUT    | `/:id/image` | Update menu item images        | Chef/Admin |
-| DELETE | `/:id`       | Delete menu item               | Chef/Admin |
+| Method | Endpoint     | Description                  | Access     |
+| ------ | ------------ | ---------------------------- | ---------- |
+| GET    | `/`          | Get menu items               | Public     |
+| GET    | `/search`    | Search menu (title/category) | Public     |
+| GET    | `/:id`       | Get menu item by ID          | Public     |
+| POST   | `/`          | Create menu item (+images)   | Chef/Admin |
+| PUT    | `/:id`       | Update menu item             | Chef/Admin |
+| PUT    | `/:id/image` | Update menu item images      | Chef/Admin |
+| DELETE | `/:id`       | Delete menu item             | Chef/Admin |
 
 ### Orders `/api/order`
 
-| Method | Endpoint      | Description                    | Access              |
-| ------ | ------------- | ------------------------------ | ------------------- |
-| POST   | `/`           | Create order                   | Authenticated user  |
-| GET    | `/`           | Get all orders                 | Staff (admin/chef/delivery) |
-| GET    | `/myorder`    | Get current user orders        | Authenticated user  |
-| PUT    | `/:id`        | Update order state             | Chef/Admin          |
-| PUT    | `/:id/cancel` | Cancel order                   | Authenticated user  |
+| Method | Endpoint      | Description             | Access                      |
+| ------ | ------------- | ----------------------- | --------------------------- |
+| POST   | `/`           | Create order            | Authenticated user          |
+| GET    | `/`           | Get all orders          | Staff (admin/chef/delivery) |
+| GET    | `/myorder`    | Get current user orders | Authenticated user          |
+| PUT    | `/:id`        | Update order state      | Chef/Admin                  |
+| PUT    | `/:id/cancel` | Cancel order            | Authenticated user          |
 
 ## Search Examples
 
 ```http
-GET /api/menu/search?search=pizza
+GET /api/menu/search?title=pizza
 GET /api/menu/search?category=grills
-GET /api/menu/search?search=pizza&category=grills
+GET /api/menu/search?title=pizza&category=grills
 GET /api/menu/search?page=1&limit=5
 
-GET /api/order?status=pending
-GET /api/order?status=ready
+PUT /api/order/:id
+body: { "status": "ready" }
+
+PUT /api/order/:id/cancel
 ```
 
 ## License

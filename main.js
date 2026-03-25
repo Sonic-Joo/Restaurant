@@ -15,7 +15,7 @@ require("./utils/passport");
 
 const app = express();
 connectDB();
-connectRedis()
+connectRedis();
 
 app.use(
   session({
@@ -37,7 +37,6 @@ app.use("/api/user", apiLimiter, require("./routes/users.route"));
 app.use("/api/menu", apiLimiter, require("./routes/menu.route"));
 app.use("/api/order", apiLimiter, require("./routes/order.route"));
 
-// Not Found Then Error
 app.use(notFound);
 app.use(errorHandler);
 
