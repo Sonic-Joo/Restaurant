@@ -15,7 +15,6 @@ const cache = (key, ttl = 3600) => {
 
       const originalJson = res.json.bind(res);
       res.json = async (body) => {
-        // await client.set(key , JSON.stringify(body))
         await client.setEx(key, ttl, JSON.stringify(body));
         return originalJson(body);
       };

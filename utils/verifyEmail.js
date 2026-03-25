@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const logger = require("./logger");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -18,10 +19,10 @@ module.exports = async (userEmail, subject, htmlTemplate) => {
     };
 
     const info = await transporter.sendMail(mailOption);
-    console.log("Email Sent:", info.response);
+    logger.info("Email Sent:", info.response);
     return info;
   } catch (error) {
-    console.error("Email Service Error Details:", error.message);
+    logger.error("Email Service Error Details:", error.message);
     throw new Error(error.message || "Email Service Error");
   }
 };

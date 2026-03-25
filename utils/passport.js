@@ -4,7 +4,7 @@ const FacebookStrategy = require("passport-facebook").Strategy;
 const { User } = require("../models/user");
 const { generateTokens } = require("./generateToken");
 
-// Google Strategy
+// Google Login
 passport.use(
   new GoogleStrategy(
     {
@@ -34,7 +34,7 @@ passport.use(
   ),
 );
 
-// Facebook Strategy
+// Facebook Login
 passport.use(
   new FacebookStrategy(
     {
@@ -65,6 +65,6 @@ passport.use(
   ),
 );
 
-passport.serializeUser((data, done) => done(null, data));
+passport.serializeUser((user, done) => done(null, user));
 
-passport.deserializeUser((data, done) => done(null, data));
+passport.deserializeUser((user, done) => done(null, user));

@@ -84,7 +84,7 @@ const validationOnRegister = (obj) => {
   const schema = joi.object({
     username: joi.string().trim().required(),
     address: joi.string().trim().required(),
-    email: joi.string().email().trim().required(),
+    email: joi.string().trim().email().required(),
     password: joi.string().min(8).required(),
     phoneNumber: joi
       .string()
@@ -98,6 +98,13 @@ const validationOnLogin = (obj) => {
   const schema = joi.object({
     email: joi.string().email().trim().required(),
     password: joi.string().min(8).required(),
+  });
+  return schema.validate(obj);
+};
+
+const validationOnForgetPass = (obj) => {
+  const schema = joi.object({
+    email: joi.string().email().trim().required(),
   });
   return schema.validate(obj);
 };
@@ -129,6 +136,7 @@ module.exports = {
   User,
   validationOnRegister,
   validationOnLogin,
+  validationOnForgetPass,
   validationOnUpdate,
   validateChangePassword,
 };

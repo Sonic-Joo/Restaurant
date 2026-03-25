@@ -8,7 +8,7 @@ const client = createClient({
     host: process.env.REDIS_HOST,
     port: process.env.REDIS_PORT,
     reconnectStrategy: (retries) => {
-      if (retries > 3) {
+      if (retries > 5) {
         logger.error("Redis max retries reached, stopping...");
         return false;
       }

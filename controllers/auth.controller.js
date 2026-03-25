@@ -6,6 +6,7 @@ const {
   User,
   validationOnRegister,
   validationOnLogin,
+  validationOnForgetPass,
 } = require("../models/user");
 const RefreshToken = require("../models/refreshToken");
 const {
@@ -92,10 +93,7 @@ module.exports.loginCtrl = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } = await generateTokens(userExist);
 
   res.status(200).json({
-    id: userExist._id,
-    username: userExist.username,
-    email: userExist.email,
-    role: userExist.role,
+    user: userExist,
     accessToken,
     refreshToken,
   });
@@ -127,6 +125,11 @@ module.exports.verifyEmailCtrl = asyncHandler(async (req, res) => {
  * @access public
 ---------------------------------------------------------------*/
 module.exports.forgotPasswordCtrl = asyncHandler(async (req, res) => {
+  const { error } = validationOnForgetPass(req.body);
+  if (error) {
+    return res.status(400).json({ message: error.details[0].message });
+  }
+
   const user = await User.findOne({ email: req.body.email });
   if (!user) {
     return res.status(404).json({ message: "User Not Found" });
@@ -172,7 +175,7 @@ module.exports.resetPasswordCtrl = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Expired Token, Please Try Again" });
   }
 
-  const { newPassword } = req.body;
+  const newPassword = req.body.newPassword;
   if (newPassword.trim().length < 8) {
     return res
       .status(400)

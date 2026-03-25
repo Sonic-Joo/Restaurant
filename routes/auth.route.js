@@ -37,7 +37,7 @@ router.route("/google/callback").get(
 );
 
 router.route("/google/failed").get((req, res) => {
-  res.status(400).json({ message: "Google Login Failed" });
+  return res.status(400).json({ message: "Google Login Failed" });
 });
 
 router
@@ -52,7 +52,7 @@ router.route("/facebook/callback").get(
 );
 
 router.route("/facebook/failed").get((req, res) => {
-  res.status(400).json({ message: "Facebook Login Failed" });
+  return res.status(400).json({ message: "Facebook Login Failed" });
 });
 
 module.exports = router;
