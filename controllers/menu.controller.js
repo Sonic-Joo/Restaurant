@@ -147,7 +147,7 @@ module.exports.updateMenuItemImage = asyncHandler(async (req, res) => {
 });
 
 /**---------------------------------------------------------------
- * @desc Search in Menu Item 
+ * @desc Search in Menu Item
  * @router /api/menu/search
  * @method GET
  * @access public
@@ -165,10 +165,10 @@ module.exports.searchMenuItem = asyncHandler(async (req, res) => {
   }
 
   if (req.query.category) {
-    if (!validCategories.includes(req.query.category)) {
+    if (!validCategories.includes(new RegExp(req.query.category, "i"))) {
       return res.status(400).json({ message: "Invalid Category" });
     }
-    query.category = req.query.category;
+    query.category = new RegExp(req.query.category, "i");
   }
 
   const total = await MenuItem.countDocuments(query);
