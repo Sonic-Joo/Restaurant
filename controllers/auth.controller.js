@@ -93,7 +93,10 @@ module.exports.loginCtrl = asyncHandler(async (req, res) => {
   const { accessToken, refreshToken } = await generateTokens(userExist);
 
   res.status(200).json({
-    user: userExist,
+    username: userExist.username,
+    email: userExist.email,
+    role: userExist.role,
+    phoneNumber: userExist.phoneNumber,
     accessToken,
     refreshToken,
   });
