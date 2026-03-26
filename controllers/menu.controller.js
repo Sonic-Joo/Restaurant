@@ -161,14 +161,17 @@ module.exports.searchMenuItem = asyncHandler(async (req, res) => {
   const query = {};
 
   if (req.query.title) {
-    query.title = new RegExp(req.query.title, "i");
+    query.title = new RegExp(req.query.title.trim(), "i");
   }
 
   if (req.query.category) {
-    if (!validCategories.includes(new RegExp(req.query.category, "i"))) {
+    const cat = req.query.category.trim().toLowerCase();
+
+    if (!validCategories.includes(cat)) {
       return res.status(400).json({ message: "Invalid Category" });
     }
-    query.category = new RegExp(req.query.category, "i");
+
+    query.category = cat;
   }
 
   const total = await MenuItem.countDocuments(query);
