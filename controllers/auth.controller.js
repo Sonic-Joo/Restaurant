@@ -63,10 +63,7 @@ module.exports.registerUserCtrl = asyncHandler(async (req, res) => {
     },
     {
       attempts: 3,
-      backoff: {
-        type: "exponential",
-        delay: 1000,
-      },
+      backoff: { type: "exponential", delay: 1000 },
     },
   );
 
@@ -179,10 +176,7 @@ module.exports.forgotPasswordCtrl = asyncHandler(async (req, res) => {
     },
     {
       attempts: 3,
-      backoff: {
-        type: "exponential",
-        delay: 1000,
-      },
+      backoff: { type: "exponential", delay: 1000 },
     },
   );
 

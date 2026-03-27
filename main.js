@@ -3,6 +3,7 @@ const path = require("path");
 const cors = require("cors");
 const helmet = require("helmet");
 const express = require("express");
+const compression = require("compression");
 const connectDB = require("./DB/connectedDB");
 const { authLimiter, apiLimiter } = require("./middlewares/ratelimiter");
 const morganLogger = require("./middlewares/morganLogger");
@@ -13,6 +14,7 @@ const session = require("express-session");
 const { connectRedis } = require("./utils/redisClient");
 require("./utils/passport");
 require("./workers/emailWorker");
+
 
 const app = express();
 connectDB();
@@ -28,6 +30,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(morganLogger);
+app.use(compression());
 app.use(helmet());
 app.use(cors());
 app.use(express.json());

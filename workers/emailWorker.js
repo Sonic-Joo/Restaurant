@@ -16,7 +16,7 @@ const emailWorker = new Worker(
     await verifyEmail(to, subject, html);
     logger.info(`Email sent to ${to}`);
   },
-  { connection },
+  { connection, concurrency: 10 },
 );
 
 emailWorker.on("completed", (job) => {
@@ -24,7 +24,9 @@ emailWorker.on("completed", (job) => {
 });
 
 emailWorker.on("failed", (job, err) => {
-  logger.error(`Job ${job.id} failed after ${job.attemptsMade} attempts: ${err.message}`);
+  logger.error(
+    `Job ${job.id} failed after ${job.attemptsMade} attempts: ${err.message}`,
+  );
 });
 
 module.exports = emailWorker;

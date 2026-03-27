@@ -17,9 +17,10 @@ module.exports.getAllUsersCtrl = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
   const skip = (page - 1) * limit;
+  const sort = req.query.sort ? req.query.sort : "-createdAt";
 
   const total = await User.countDocuments();
-  const users = await User.find().skip(skip).limit(limit);
+  const users = await User.find().skip(skip).limit(limit).sort(sort);
 
   res.status(200).json({
     total,

@@ -31,8 +31,9 @@ const cacheWithPagenation = (key, ttl = 3600) => {
   return async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
+    const sort = req.query.sort;
 
-    if (page === 1 && limit === 10) {
+    if (page === 1 && limit === 10 && !sort) {
       return cache(key, ttl)(req, res, next);
     }
 
