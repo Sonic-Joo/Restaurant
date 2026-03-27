@@ -54,11 +54,21 @@ module.exports.registerUserCtrl = asyncHandler(async (req, res) => {
     <a href="${verifyLink}">Verify Email</a>
     <p>Link expires in 24 hours</p>`;
 
-  await emailQueue.add("sendVerificationEmail", {
-    to: user.email,
-    subject: "Verify Your Email",
-    html: htmlTemplate,
-  });
+  await emailQueue.add(
+    "sendVerificationEmail",
+    {
+      to: user.email,
+      subject: "Verify Your Email",
+      html: htmlTemplate,
+    },
+    {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 1000,
+      },
+    },
+  );
 
   await client.del("user-items");
 
@@ -160,11 +170,21 @@ module.exports.forgotPasswordCtrl = asyncHandler(async (req, res) => {
     <a href="${resetLink}">Reset Password</a>
     <p>Link expires in 10 minutes</p>`;
 
-  await emailQueue.add("sendResetPasswordEmail", {
-    to: user.email,
-    subject: "Reset Your Password",
-    html: htmlTemplate,
-  });
+  await emailQueue.add(
+    "sendResetPasswordEmail",
+    {
+      to: user.email,
+      subject: "Reset Your Password",
+      html: htmlTemplate,
+    },
+    {
+      attempts: 3,
+      backoff: {
+        type: "exponential",
+        delay: 1000,
+      },
+    },
+  );
 
   res.status(200).json({ message: "Reset Password Email Sent" });
 });

@@ -23,8 +23,8 @@ emailWorker.on("completed", (job) => {
   logger.info(`Job ${job.id} completed`);
 });
 
-emailWorker.on("failed", (job, error) => {
-  logger.error(`Job ${job.id} failed: ${error.message}`);
+emailWorker.on("failed", (job, err) => {
+  logger.error(`Job ${job.id} failed after ${job.attemptsMade} attempts: ${err.message}`);
 });
 
 module.exports = emailWorker;

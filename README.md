@@ -26,6 +26,13 @@ Production-ready REST API for a restaurant ordering system built with Node.js, E
 - ⚡ Performance
   - Redis caching for read-heavy endpoints
 
+- 📩 Background Jobs (Queue System)
+
+  - Email processing using queue + worker
+  - Asynchronous email sending (no blocking requests)
+  - Retry mechanism for failed jobs
+  - Scalable job handling (ready for high load)
+
 - 🛡️ Security
   - Helmet (secure headers)
   - Rate limiting (auth & global)
