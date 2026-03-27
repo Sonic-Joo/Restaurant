@@ -12,6 +12,7 @@ const passport = require("passport");
 const session = require("express-session");
 const { connectRedis } = require("./utils/redisClient");
 require("./utils/passport");
+require("./workers/emailWorker");
 
 const app = express();
 connectDB();

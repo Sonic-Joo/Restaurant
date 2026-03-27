@@ -13,8 +13,8 @@ const {
   generateTokens,
   generateAccessToken,
 } = require("../utils/generateToken");
-const verifyEmail = require("../utils/verifyEmail");
 const { client } = require("../utils/redisClient");
+const emailQueue = require("../queues/emailQueue");
 
 /**---------------------------------------------------------------
  * @desc Register New User - Sign Up
@@ -53,7 +53,13 @@ module.exports.registerUserCtrl = asyncHandler(async (req, res) => {
     <p>Click the link below to verify your email:</p>
     <a href="${verifyLink}">Verify Email</a>
     <p>Link expires in 24 hours</p>`;
-  await verifyEmail(user.email, "Verify Your Email", htmlTemplate);
+
+  await emailQueue.add("sendVerificationEmail", {
+    to: user.email,
+    subject: "Verify Your Email",
+    html: htmlTemplate,
+  });
+
   await client.del("user-items");
 
   res.status(201).json({ message: "User Created Successfully, Please Login" });
@@ -154,7 +160,11 @@ module.exports.forgotPasswordCtrl = asyncHandler(async (req, res) => {
     <a href="${resetLink}">Reset Password</a>
     <p>Link expires in 10 minutes</p>`;
 
-  await verifyEmail(user.email, "Reset Your Password", htmlTemplate);
+  await emailQueue.add("sendResetPasswordEmail", {
+    to: user.email,
+    subject: "Reset Your Password",
+    html: htmlTemplate,
+  });
 
   res.status(200).json({ message: "Reset Password Email Sent" });
 });

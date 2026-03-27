@@ -167,7 +167,7 @@ module.exports.searchMenuItem = asyncHandler(async (req, res) => {
   if (req.query.category) {
     const cat = req.query.category.trim().toLowerCase();
 
-    if (!validCategories.includes(cat)) {
+    if (!validCategories.has(cat)) {
       return res.status(400).json({ message: "Invalid Category" });
     }
 
